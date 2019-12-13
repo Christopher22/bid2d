@@ -11,8 +11,8 @@ def main():
     arguments = parser.parse_args()
 
     stimuli = list(Stimulus.from_csv(arguments.samples))
-    experiment = Experiment(stimuli)
-    experiment.run((800, 800))
+    experiment = Experiment((800, 800), stimuli)
+    experiment.run("TestParticipant")
 
 
 if __name__ == "__main__":

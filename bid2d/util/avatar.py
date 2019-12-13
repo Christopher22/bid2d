@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Tuple
 
 from psychopy import visual
 
@@ -16,3 +17,32 @@ class Avatar(visual.ImageStim):
     def down(self):
         x, y = self.pos
         self.pos = x, y - self.speed
+
+    def is_on_screen(self) -> bool:
+        x, y = self.pos
+        w, h = self.size
+        return (
+            x - w / 2 >= -1.0
+            and x + w / 2 <= 1.0
+            and y - h / 2 >= -1.0
+            and y + h / 2 <= 1.0
+        )
+
+    def is_overlapping(self, stimulus: visual.ImageStim):
+        x1, x2, y1, y2 = Avatar._calculate_rect(self)
+        o_x1, o_x2, o_y1, o_y2 = Avatar._calculate_rect(stimulus)
+
+        if x1 > o_x2 or o_x1 > x2:
+            return False
+        elif y1 < o_y2 or o_y1 < y2:
+            return False
+        else:
+            return True
+
+    @staticmethod
+    def _calculate_rect(
+        stimulus: visual.ImageStim
+    ) -> Tuple[float, float, float, float]:
+        x, y = stimulus.pos
+        w, h = stimulus.size
+        return x - w / 2, x + w / 2, y + h / 2, y - h / 2

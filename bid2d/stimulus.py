@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Iterable, Union
+from typing import Any, Iterable, Union, Tuple
 import csv
 from collections.abc import MutableMapping
 
@@ -86,4 +86,14 @@ class Stimulus(MutableMapping):
                 if not path.is_absolute():
                     sample[Stimulus.IMAGE_PATH] = Path(asset_file.parent, path)
 
+                sample[Stimulus.SHOULD_APPROACH] = (
+                    sample.pop(Stimulus.SHOULD_APPROACH).lower().strip() == "true"
+                )
                 yield Stimulus(**sample)
+
+    def plain_data(self) -> Iterable[Tuple[str, Union[int, float, str, bool]]]:
+        for key in self:
+            value = self[key]
+            yield key, str(value) if not isinstance(value, int) and not isinstance(
+                value, float
+            ) and not isinstance(value, bool) else value
