@@ -1,0 +1,4 @@
+image,name,should_approach
+stim1.png,Red,False
+stim2.png,Green,True
+stim3.png,Blue,True

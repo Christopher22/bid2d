@@ -293,5 +293,3 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/venv,linux,macos,python,windows,pycharm+all,visualstudiocode
-
-bid2d/samples
