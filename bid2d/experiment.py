@@ -11,74 +11,13 @@ from pyglet.window.key import KeyStateHandler, UP, DOWN
 from psychopy.iohub.client import launchHubServer
 
 from bid2d.stimulus import Stimulus
+from bid2d.position import Position
+from bid2d.reaction import Reaction
 from bid2d.util.fixation_cross import FixationCross
 from bid2d.util.avatar import Avatar
 
 
 class Experiment:
-    class Position(Enum):
-        Above = "above"
-        Below = "below"
-
-        def calculate_avatar_position(
-            self, stimulus: visual.ImageStim
-        ) -> Tuple[float, float]:
-            stim_y = stimulus.pos[1]
-            stim_height = stimulus.size[1]
-            distance = (1 - (stim_y + (stim_height / 2))) / 2
-            return (
-                0.0,
-                stim_y + (stim_height / 2) + distance
-                if self == Experiment.Position.Above
-                else stim_y - (stim_height / 2) - distance,
-            )
-
-        def __str__(self):
-            return self.value
-
-    class Reaction(Enum):
-        NoReaction = (0,)
-        Up = (1,)
-        Down = (2,)
-        CorrectReaction = (3,)
-        IncorrectReaction = 4
-
-        def validate(
-            self, position: "Experiment.Position", should_approach: bool
-        ) -> "Experiment.Reaction":
-            if self not in (Experiment.Reaction.Up, Experiment.Reaction.Down):
-                raise ValueError("Invalid state")
-
-            if should_approach:
-                if (
-                    self == Experiment.Reaction.Up
-                    and position == Experiment.Position.Below
-                ):
-                    return Experiment.Reaction.CorrectReaction
-                elif self == Experiment.Reaction.Down == Experiment.Position.Above:
-                    return Experiment.Reaction.CorrectReaction
-            else:
-                if (
-                    self == Experiment.Reaction.Up
-                    and position == Experiment.Position.Above
-                ):
-                    return Experiment.Reaction.CorrectReaction
-                elif (
-                    self == Experiment.Reaction.Down
-                    and position == Experiment.Position.Below
-                ):
-                    return Experiment.Reaction.CorrectReaction
-
-            return Experiment.Reaction.IncorrectReaction
-
-        def __bool__(self):
-            if self == Experiment.Reaction.CorrectReaction:
-                return True
-            elif self == Experiment.Reaction.IncorrectReaction:
-                return False
-            else:
-                raise ValueError("The correctness of the reaction is not determined.")
-
     def __init__(self, win_size: Tuple[int, int], samples: Sequence[Stimulus]):
         self.samples = samples
         self._window = visual.Window(win_size, checkTiming=True)
@@ -88,12 +27,10 @@ class Experiment:
             experiment_code="BodyImageDistortion", session_code=participant
         )
 
+        # Create the trials and load all the visible stimuli into the graphic buffer
         trials = Experiment.generate_trials(
-            self.samples,
-            position=(Experiment.Position.Above, Experiment.Position.Below),
+            self.samples, position=(Position.Above, Position.Below)
         )
-
-        # Load all the visible stimuli into the graphic buffer
         all((trial.load(self._window) for trial in trials))
         fixation_cross = FixationCross(-0.5, 0.5, -0.5, 0.5, self._window)
         avatar = Avatar(self._window)
@@ -109,12 +46,13 @@ class Experiment:
             trialList=[dict(trial.plain_data()) for trial in trials],
             nReps=1,
             method="sequential",
-            dataTypes=("reaction_frame", "correct_response"),
+            dataTypes=("reaction_frame", "correct_response", "duration"),
         )
         io.createTrialHandlerRecordTable(trial_handler)
 
         # Iterate through the trials
         for trial, trial_data in zip(trials, trial_handler):
+
             # Show the fixation cross
             fixation_cross.show(1)
 
@@ -125,21 +63,21 @@ class Experiment:
             should_approach = trial_data[Stimulus.SHOULD_APPROACH]
 
             # Present the frames one after another and wait for the user reaction
-            reaction = Experiment.Reaction.NoReaction
+            reaction = Reaction.NoReaction
             for frame in itertools.count():
 
                 # Handle the reaction of the user
                 if keyboard[UP]:
                     avatar.up()
-                    if reaction == Experiment.Reaction.NoReaction:
-                        reaction = Experiment.Reaction.Up
+                    if reaction == Reaction.NoReaction:
+                        reaction = Reaction.Up
                 elif keyboard[DOWN]:
                     avatar.down()
-                    if reaction == Experiment.Reaction.NoReaction:
-                        reaction = Experiment.Reaction.Down
+                    if reaction == Reaction.NoReaction:
+                        reaction = Reaction.Down
 
                 # Check and log the first reaction
-                if reaction in (Experiment.Reaction.Up, Experiment.Reaction.Down):
+                if reaction in (Reaction.Up, Reaction.Down):
                     reaction = reaction.validate(
                         should_approach=should_approach, position=trial_data["position"]
                     )
@@ -150,6 +88,7 @@ class Experiment:
                 if (should_approach and avatar.is_overlapping(stimulus)) or (
                     not should_approach and not avatar.is_on_screen()
                 ):
+                    trial_handler.addData("duration", frame)
                     break
 
                 # Draw end present the simuli
