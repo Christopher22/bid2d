@@ -1,7 +1,6 @@
 from typing import Sequence, Any, Tuple
 import itertools
 from copy import deepcopy
-from enum import Enum
 import random
 
 from psychopy import visual, data
@@ -18,13 +17,24 @@ from bid2d.util.avatar import Avatar
 
 
 class Experiment:
-    def __init__(self, win_size: Tuple[int, int], samples: Sequence[Stimulus]):
+    EXPERIMENT_NAME = "BodyImageDistortion"
+
+    RESULT_REACTION = "reaction_frame"
+    RESULT_CORRECT = "correct_response"
+    RESULT_DURATION = "duration"
+
+    def __init__(
+        self,
+        samples: Sequence[Stimulus],
+        win_size: Tuple[int, int] = (1024, 768),
+        fullscreen: bool = True,
+    ):
         self.samples = samples
-        self._window = visual.Window(win_size, checkTiming=True)
+        self._window = visual.Window(win_size, checkTiming=True, fullscr=fullscreen)
 
     def run(self, participant: str):
         io = launchHubServer(
-            experiment_code="BodyImageDistortion", session_code=participant
+            experiment_code=Experiment.EXPERIMENT_NAME, session_code=participant
         )
 
         # Create the trials and load all the visible stimuli into the graphic buffer
@@ -46,7 +56,11 @@ class Experiment:
             trialList=[dict(trial.plain_data()) for trial in trials],
             nReps=1,
             method="sequential",
-            dataTypes=("reaction_frame", "correct_response", "duration"),
+            dataTypes=(
+                Experiment.RESULT_REACTION,
+                Experiment.RESULT_DURATION,
+                Experiment.RESULT_CORRECT,
+            ),
         )
         io.createTrialHandlerRecordTable(trial_handler)
 
@@ -81,14 +95,14 @@ class Experiment:
                     reaction = reaction.validate(
                         should_approach=should_approach, position=trial_data["position"]
                     )
-                    trial_handler.addData("reaction_frame", frame)
-                    trial_handler.addData("correct_response", bool(reaction))
+                    trial_handler.addData(Experiment.RESULT_REACTION, frame)
+                    trial_handler.addData(Experiment.RESULT_CORRECT, bool(reaction))
 
                 # Check if this trial should end
                 if (should_approach and avatar.is_overlapping(stimulus)) or (
                     not should_approach and not avatar.is_on_screen()
                 ):
-                    trial_handler.addData("duration", frame)
+                    trial_handler.addData(Experiment.RESULT_DURATION, frame)
                     break
 
                 # Draw end present the simuli

@@ -11,7 +11,7 @@ def main():
     arguments = parser.parse_args()
 
     stimuli = list(Stimulus.from_csv(arguments.samples))
-    experiment = Experiment((800, 800), stimuli)
+    experiment = Experiment(stimuli)
     experiment.run("TestParticipant")
 
 
