@@ -13,6 +13,7 @@ from pyglet.window import Window
 from pyglet.window.key import KeyStateHandler, UP, DOWN
 from psychopy.iohub.client import launchHubServer
 
+from bid2d.participant import Participant
 from bid2d.stimulus import Stimulus
 from bid2d.position import Position
 from bid2d.reaction import Reaction
@@ -36,9 +37,12 @@ class Experiment:
         self.samples = samples
         self._window = visual.Window(win_size, checkTiming=True, fullscr=fullscreen)
 
-    def run(self, participant: str):
+    def run(self, participant: Participant):
         io = launchHubServer(
-            experiment_code=Experiment.EXPERIMENT_NAME, session_code=participant
+            experiment_code=Experiment.EXPERIMENT_NAME,
+            session_code=str(participant),
+            datastore_name=Experiment.EXPERIMENT_NAME,
+            session_info={"code": str(participant), "user_variables": dict(**participant)},
         )
 
         # Create the trials and load all the visible stimuli into the graphic buffer

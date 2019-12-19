@@ -1,6 +1,7 @@
 import argparse
 
 from bid2d.experiment import Experiment, Stimulus
+from bid2d.participant import Participant
 
 
 def main():
@@ -11,8 +12,11 @@ def main():
     arguments = parser.parse_args()
 
     stimuli = list(Stimulus.from_csv(arguments.samples))
-    experiment = Experiment(stimuli)
-    experiment.run("TestParticipant")
+
+    participant = Participant.from_user(**{"Is patient?": False})
+    if participant is not None:
+        experiment = Experiment(stimuli, fullscreen=False)
+        experiment.run(participant)
 
 
 if __name__ == "__main__":
