@@ -42,7 +42,10 @@ class Experiment:
             experiment_code=Experiment.EXPERIMENT_NAME,
             session_code=str(participant),
             datastore_name=Experiment.EXPERIMENT_NAME,
-            session_info={"code": str(participant), "user_variables": dict(**participant)},
+            session_info={
+                "code": str(participant),
+                "user_variables": dict(**participant),
+            },
         )
 
         # Create the trials and load all the visible stimuli into the graphic buffer
@@ -61,7 +64,17 @@ class Experiment:
 
         # Create the trial handler for logging purposes
         trial_handler = data.TrialHandler(
-            trialList=[dict(trial.plain_data()) for trial in trials],
+            trialList=[
+                dict(
+                    (
+                        *trial.plain_data(),
+                        (Experiment.RESULT_REACTION, -1),
+                        (Experiment.RESULT_DURATION, -1),
+                        (Experiment.RESULT_CORRECT, False),
+                    )
+                )
+                for trial in trials
+            ],
             nReps=1,
             method="sequential",
             dataTypes=(
@@ -74,7 +87,6 @@ class Experiment:
 
         # Iterate through the trials
         for trial, trial_data in zip(trials, trial_handler):
-
             # Show the fixation cross
             fixation_cross.show(1)
 
@@ -82,7 +94,7 @@ class Experiment:
             stimulus = trial.load(self._window)
             avatar.pos = trial["position"].calculate_avatar_position(stimulus)
 
-            should_approach = trial_data[Stimulus.SHOULD_APPROACH]
+            should_approach = trial[Stimulus.SHOULD_APPROACH]
 
             # Present the frames one after another and wait for the user reaction
             reaction = Reaction.NoReaction
@@ -101,16 +113,16 @@ class Experiment:
                 # Check and log the first reaction
                 if reaction in (Reaction.Up, Reaction.Down):
                     reaction = reaction.validate(
-                        should_approach=should_approach, position=trial_data["position"]
+                        should_approach=should_approach, position=trial["position"]
                     )
-                    trial_handler.addData(Experiment.RESULT_REACTION, frame)
-                    trial_handler.addData(Experiment.RESULT_CORRECT, bool(reaction))
+                    trial_data[Experiment.RESULT_REACTION] = frame
+                    trial_data[Experiment.RESULT_CORRECT] = bool(reaction)
 
                 # Check if this trial should end
                 if (should_approach and avatar.is_overlapping(stimulus)) or (
                     not should_approach and not avatar.is_on_screen()
                 ):
-                    trial_handler.addData(Experiment.RESULT_DURATION, frame)
+                    trial_data[Experiment.RESULT_DURATION] = frame
                     break
 
                 # Draw end present the simuli
