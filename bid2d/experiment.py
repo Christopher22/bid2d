@@ -99,7 +99,6 @@ class Experiment:
             # Present the frames one after another and wait for the user reaction
             reaction = Reaction.NoReaction
             for frame in itertools.count():
-
                 # Handle the reaction of the user
                 if keyboard[UP]:
                     avatar.up()
@@ -122,7 +121,9 @@ class Experiment:
                 if (should_approach and avatar.is_overlapping(stimulus)) or (
                     not should_approach and not avatar.is_on_screen()
                 ):
-                    trial_data[Experiment.RESULT_DURATION] = frame
+                    trial_data[Experiment.RESULT_DURATION] = (
+                        frame - trial_data[Experiment.RESULT_REACTION]
+                    )
                     break
 
                 # Draw end present the simuli

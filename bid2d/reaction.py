@@ -5,7 +5,7 @@ from bid2d.position import Position
 
 class Reaction(Enum):
     NoReaction = 0
-    Up = 0
+    Up = 1
     Down = 2
     CorrectReaction = 3
     IncorrectReaction = 4
