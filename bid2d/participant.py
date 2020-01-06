@@ -1,6 +1,6 @@
 import uuid
 from collections.abc import MutableMapping
-from typing import Dict, Any, Optional
+from typing import Mapping, Any, Optional
 
 from psychopy import gui
 
@@ -8,9 +8,10 @@ from psychopy import gui
 class Participant(MutableMapping):
     ID = "Id"
 
-    def __init__(self, user_info: Dict[str, Any]):
-        self._data = user_info
-        self._data[Participant.ID] = Participant.generate_id()
+    def __init__(self, user_info: Mapping[str, Any]):
+        self._data = dict(**user_info)
+        if Participant.ID not in self._data:
+            self._data[Participant.ID] = Participant.generate_id()
 
     def __getitem__(self, key: str) -> Any:
         return self._data[key]
