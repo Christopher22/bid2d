@@ -1,6 +1,6 @@
 import uuid
 from collections.abc import MutableMapping
-from typing import Mapping, Any, Optional
+from typing import Dict, Any, Optional
 
 from psychopy import gui
 
@@ -8,7 +8,7 @@ from psychopy import gui
 class Participant(MutableMapping):
     ID = "Id"
 
-    def __init__(self, user_info: Mapping[str, Any]):
+    def __init__(self, user_info: Dict[str, Any]):
         self._data = user_info
         self._data[Participant.ID] = Participant.generate_id()
 
@@ -16,7 +16,7 @@ class Participant(MutableMapping):
         return self._data[key]
 
     def __setitem__(self, key: str, value: Any):
-        if key == Participant.ID:
+        if key == Participant.ID and value != self._data[Participant.ID]:
             raise ValueError("It is not allowed to change the ID of the participant!")
         self._data[key] = value
 
@@ -41,10 +41,10 @@ class Participant(MutableMapping):
             participant,
             title="Participant",
             fixed=(Participant.ID,),
-            copy_dict=False,
+            copyDict=False,
             show=True,
         )
-        return participant if result == gui.DlgFromDict.OK else None
+        return participant if result.OK else None
 
     @staticmethod
     def generate_id() -> str:
