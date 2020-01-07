@@ -1,7 +1,8 @@
 from pathlib import Path
-from psychopy.iohub.datastore.util import ExperimentDataAccessUtility
 from typing import Union, Iterable, Mapping, Any
 import argparse
+
+from psychopy.iohub.datastore.util import ExperimentDataAccessUtility
 
 from bid2d.experiment import Experiment
 from bid2d.participant import Participant
@@ -91,6 +92,16 @@ if __name__ == "__main__":
             print("\n".join(str(participant) for participant in analyzer.participants))
         else:
             for i, row in enumerate(analyzer.get_rows(args.participant)):
+                # Print the column names
                 if i == 0:
                     print("\t".join(row.keys()))
-                print("\t".join(str(value) for value in row.values()))
+
+                # Print the row
+                print(
+                    "\t".join(
+                        str(value)
+                        if not value.dtype.kind == "S"
+                        else "".join(chr(item) for item in value)
+                        for value in row.values()
+                    )
+                )
