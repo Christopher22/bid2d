@@ -21,5 +21,8 @@ class Position(Enum):
             else stim_y - (stim_height / 2) - distance,
         )
 
+    def __repr__(self):
+        return self.value.capitalize()
+
     def __str__(self):
-        return self.value
+        return self.value.capitalize()

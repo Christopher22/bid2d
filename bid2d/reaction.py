@@ -17,7 +17,7 @@ class Reaction(Enum):
         if should_approach:
             if self == Reaction.Up and position == Position.Below:
                 return Reaction.CorrectReaction
-            elif self == Reaction.Down == Position.Above:
+            elif self == Reaction.Down and position == Position.Above:
                 return Reaction.CorrectReaction
         else:
             if self == Reaction.Up and position == Position.Above:
@@ -26,6 +26,12 @@ class Reaction(Enum):
                 return Reaction.CorrectReaction
 
         return Reaction.IncorrectReaction
+
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
 
     def __bool__(self):
         if self == Reaction.CorrectReaction:

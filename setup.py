@@ -10,7 +10,7 @@ setup(
     description="Affective simon task for body image distortion",
     author="Christopher Gundler",
     author_email="christopher@gundler.de",
-    version="0.0.3.1",
+    version="0.0.3.2",
     url="https://gundler.de/",
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     python_requires=">=3.7",
