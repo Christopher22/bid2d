@@ -1,13 +1,13 @@
-from typing import Sequence, Any, Tuple
 import itertools
-from copy import deepcopy
 import random
+from copy import deepcopy
+from typing import Sequence, Any, Tuple
 
 from psychopy.preferences import prefs
 
 # Install a global shutdown key
 prefs.general["shutdownKey"] = "q"
-from psychopy import visual, data, event
+from psychopy import visual, data
 from psychopy.visual.backends.pygletbackend import PygletBackend
 from pyglet.window import Window
 from pyglet.window.key import KeyStateHandler, UP, DOWN
