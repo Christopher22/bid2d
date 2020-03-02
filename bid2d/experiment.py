@@ -42,7 +42,7 @@ class Experiment:
             self.samples, position=(Position.Above, Position.Below), seed=seed
         )
         all((trial.load(self._window) for trial in trials))
-        fixation_cross = FixationCross(-0.5, 0.5, -0.5, 0.5, self._window)
+        fixation_cross = FixationCross.create(self._window)
         avatar = Avatar(self._window)
         random_generator = random.Random(seed)
 

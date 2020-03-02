@@ -25,3 +25,16 @@ class FixationCross:
         for _ in range(fixation_frame_durations):
             self.draw()
             self._window.flip()
+
+    @staticmethod
+    def create(
+        window: psychopy.visual.Window, cross_size: float = 0.5
+    ) -> "FixationCross":
+        correction_factor = window.size.max() / window.size.min()
+        return FixationCross(
+            -cross_size,
+            cross_size,
+            -cross_size * correction_factor,
+            cross_size * correction_factor,
+            window,
+        )
