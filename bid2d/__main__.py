@@ -12,6 +12,22 @@ def main():
     parser.add_argument(
         "samples", type=str, help="The CSV file with the required samples."
     )
+    parser.add_argument(
+        "-seed", type=int, help="The seed for the random generator", default=42
+    )
+    parser.add_argument(
+        "-fixation_jitter_min",
+        type=float,
+        help="Minimal duration of the fixation cross",
+        default=0.75,
+    )
+    parser.add_argument(
+        "-fixation_jitter_max",
+        type=float,
+        help="Maximal duration of the fixation cross",
+        default=1.25,
+    )
+
     arguments = parser.parse_args()
 
     # Load the stimuli from the provided CSV file
@@ -23,7 +39,13 @@ def main():
     # Query information about the participant and start the experiment
     experiment = Experiment(stimuli, fullscreen=False, logger=logger)
     experiment.prepare()
-    experiment.run()
+    experiment.run(
+        seed=arguments.seed,
+        fixation_cross_jitter=(
+            arguments.fixation_jitter_min,
+            arguments.fixation_jitter_max,
+        ),
+    )
 
     # Gently close the PsychoPy. Otherwise, i.e. the window on Windows may hang
     core.quit()

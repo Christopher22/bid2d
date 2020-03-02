@@ -7,7 +7,7 @@ from psychopy.preferences import prefs
 
 # Install a global shutdown key
 prefs.general["shutdownKey"] = "q"
-from psychopy import visual, data
+from psychopy import visual
 from psychopy.visual.backends.pygletbackend import PygletBackend
 from pyglet.window import Window
 from pyglet.window.key import KeyStateHandler, UP, DOWN
@@ -36,14 +36,15 @@ class Experiment:
         while not self.logger:
             self._window.flip()
 
-    def run(self):
+    def run(self, fixation_cross_jitter: Tuple[float, float], seed: int):
         # Create the trials and load all the visible stimuli into the graphic buffer
         trials = Experiment.generate_trials(
-            self.samples, position=(Position.Above, Position.Below)
+            self.samples, position=(Position.Above, Position.Below), seed=seed
         )
         all((trial.load(self._window) for trial in trials))
         fixation_cross = FixationCross(-0.5, 0.5, -0.5, 0.5, self._window)
         avatar = Avatar(self._window)
+        random_generator = random.Random(seed)
 
         # It would be nice to use Psychopys keyboard feature - but it does not support holding keys down.
         # Therefore, get deeper into the rabbits hole...
@@ -54,7 +55,7 @@ class Experiment:
         # Iterate through the trials
         for trial in trials:
             # Show the fixation cross
-            fixation_cross.show(1)
+            fixation_cross.show(random_generator.uniform(*fixation_cross_jitter))
 
             # Log the start of the trial
             self.logger.push(
