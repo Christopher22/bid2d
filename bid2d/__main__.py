@@ -3,7 +3,7 @@ import argparse
 from psychopy import core
 
 from bid2d.experiment import Experiment, Stimulus
-from bid2d.participant import Participant
+from bid2d.logger import Logger
 
 
 def main():
@@ -17,11 +17,13 @@ def main():
     # Load the stimuli from the provided CSV file
     stimuli = list(Stimulus.from_csv(arguments.samples))
 
+    # Prepare the LabStreamingLayer streams
+    logger = Logger()
+
     # Query information about the participant and start the experiment
-    participant = Participant.from_user(**{"Is patient?": False})
-    if participant is not None:
-        experiment = Experiment(stimuli, fullscreen=False)
-        experiment.run(participant)
+    experiment = Experiment(stimuli, fullscreen=False, logger=logger)
+    experiment.prepare()
+    experiment.run()
 
     # Gently close the PsychoPy. Otherwise, i.e. the window on Windows may hang
     core.quit()

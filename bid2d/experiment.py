@@ -11,43 +11,32 @@ from psychopy import visual, data
 from psychopy.visual.backends.pygletbackend import PygletBackend
 from pyglet.window import Window
 from pyglet.window.key import KeyStateHandler, UP, DOWN
-from psychopy.iohub.client import launchHubServer
 
-from bid2d.participant import Participant
 from bid2d.stimulus import Stimulus
 from bid2d.position import Position
 from bid2d.reaction import Reaction
 from bid2d.util.fixation_cross import FixationCross
 from bid2d.util.avatar import Avatar
+from bid2d.logger import Logger
 
 
 class Experiment:
-    EXPERIMENT_NAME = "BodyImageDistortion"
-
-    RESULT_REACTION = "reaction_frame"
-    RESULT_CORRECT = "correct_response"
-    RESULT_DURATION = "duration"
-
     def __init__(
         self,
         samples: Sequence[Stimulus],
+        logger: Logger,
         win_size: Tuple[int, int] = (1024, 768),
         fullscreen: bool = True,
     ):
         self.samples = samples
+        self.logger = logger
         self._window = visual.Window(win_size, checkTiming=True, fullscr=fullscreen)
 
-    def run(self, participant: Participant):
-        io = launchHubServer(
-            experiment_code=Experiment.EXPERIMENT_NAME,
-            session_code=str(participant),
-            datastore_name=Experiment.EXPERIMENT_NAME,
-            session_info={
-                "code": str(participant),
-                "user_variables": dict(**participant),
-            },
-        )
+    def prepare(self):
+        while not self.logger:
+            self._window.flip()
 
+    def run(self):
         # Create the trials and load all the visible stimuli into the graphic buffer
         trials = Experiment.generate_trials(
             self.samples, position=(Position.Above, Position.Below)
@@ -62,33 +51,15 @@ class Experiment:
         keyboard = KeyStateHandler()
         self.get_raw_window().push_handlers(keyboard)
 
-        # Create the trial handler for logging purposes
-        trial_handler = data.TrialHandler(
-            trialList=[
-                dict(
-                    (
-                        *trial.plain_data(),
-                        (Experiment.RESULT_REACTION, -1),
-                        (Experiment.RESULT_DURATION, -1),
-                        (Experiment.RESULT_CORRECT, False),
-                    )
-                )
-                for trial in trials
-            ],
-            nReps=1,
-            method="sequential",
-            dataTypes=(
-                Experiment.RESULT_REACTION,
-                Experiment.RESULT_DURATION,
-                Experiment.RESULT_CORRECT,
-            ),
-        )
-        io.createTrialHandlerRecordTable(trial_handler)
-
         # Iterate through the trials
-        for trial, trial_data in zip(trials, trial_handler):
+        for trial in trials:
             # Show the fixation cross
             fixation_cross.show(1)
+
+            # Log the start of the trial
+            self.logger.push(
+                Logger.Trial(name=trial["name"], position=trial["position"])
+            )
 
             # Get the stimulus and set the position of the avatar
             stimulus = trial.load(self._window)
@@ -114,15 +85,20 @@ class Experiment:
                     reaction = reaction.validate(
                         should_approach=should_approach, position=trial["position"]
                     )
-                    trial_data[Experiment.RESULT_REACTION] = frame
-                    trial_data[Experiment.RESULT_CORRECT] = bool(reaction)
+                    self.logger.push(
+                        Logger.Reaction(
+                            num_frames=frame,
+                            correct_response=bool(reaction),
+                            should_approach=should_approach,
+                        )
+                    )
 
                 # Check if this trial should end
                 if (should_approach and avatar.is_overlapping(stimulus)) or (
                     not should_approach and not avatar.is_on_screen()
                 ):
-                    trial_data[Experiment.RESULT_DURATION] = (
-                        frame - trial_data[Experiment.RESULT_REACTION]
+                    self.logger.push(
+                        Logger.Trial(name=trial["name"], position=trial["position"])
                     )
                     break
 
@@ -130,10 +106,6 @@ class Experiment:
                 trial.draw(self._window)
                 avatar.draw(self._window)
                 self._window.flip()
-
-            io.addTrialHandlerRecord(trial_data)
-
-        io.quit()
 
     def get_raw_window(self) -> Window:
         backend = self._window.backend
