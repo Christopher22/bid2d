@@ -40,7 +40,18 @@ def main():
         default=1.25,
     )
     parser.add_argument(
-        "-fullscreen", type=bool, help="Start in fullscreen", default=True
+        "--no_fullscreen",
+        dest="fullscreen",
+        action="store_false",
+        help="Do not start in fullscreen",
+        default=True,
+    )
+    parser.add_argument(
+        "--ignore_lsl",
+        dest="prepare",
+        action="store_false",
+        help="Do not wait for a consumer for the Lab Streaming Layer streams",
+        default=True,
     )
 
     arguments = parser.parse_args()
@@ -53,7 +64,8 @@ def main():
 
     # Query information about the participant and start the experiment
     experiment = Experiment(stimuli, fullscreen=arguments.fullscreen, logger=logger)
-    experiment.prepare()
+    if arguments.prepare:
+        experiment.prepare()
     experiment.run(
         seed=arguments.seed,
         fixation_cross_jitter=(
