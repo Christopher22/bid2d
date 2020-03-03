@@ -5,10 +5,15 @@ from psychopy import visual
 
 
 class Avatar(visual.ImageStim):
-    def __init__(self, window, **kwargs):
+    def __init__(self, window, avatar_size: float = 0.25, **kwargs):
         path = Path(__file__).parents[1] / "assets" / "avatar.png"
         super().__init__(window, image=str(path), **kwargs)
         self.speed = 0.01
+
+        # Scale avatar relative to scene
+        scale_factor = [value / max(self.size) for value in self.size]
+        self.units = "norm"
+        self.size = (avatar_size * scale_factor[0], avatar_size * scale_factor[1])
 
     def up(self):
         x, y = self.pos

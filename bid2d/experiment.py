@@ -36,14 +36,20 @@ class Experiment:
         while not self.logger:
             self._window.flip()
 
-    def run(self, fixation_cross_jitter: Tuple[float, float], seed: int):
+    def run(
+        self,
+        fixation_cross_jitter: Tuple[float, float],
+        seed: int,
+        avatar_size: float,
+        stimulus_size: float,
+    ):
         # Create the trials and load all the visible stimuli into the graphic buffer
         trials = Experiment.generate_trials(
             self.samples, position=(Position.Above, Position.Below), seed=seed
         )
-        all((trial.load(self._window) for trial in trials))
+        all((trial.load(self._window, stimulus_size=stimulus_size) for trial in trials))
         fixation_cross = FixationCross.create(self._window)
-        avatar = Avatar(self._window)
+        avatar = Avatar(self._window, avatar_size=avatar_size)
         random_generator = random.Random(seed)
 
         # It would be nice to use Psychopys keyboard feature - but it does not support holding keys down.

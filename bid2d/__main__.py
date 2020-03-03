@@ -13,6 +13,18 @@ def main():
         "samples", type=str, help="The CSV file with the required samples."
     )
     parser.add_argument(
+        "-avatar_size",
+        type=float,
+        help="The relative size of the avatar regarding its largest size.",
+        default=0.4,
+    )
+    parser.add_argument(
+        "-stimulus_size",
+        type=float,
+        help="The relative size of the stimulus regarding its largest size.",
+        default=0.5,
+    )
+    parser.add_argument(
         "-seed", type=int, help="The seed for the random generator", default=42
     )
     parser.add_argument(
@@ -45,6 +57,8 @@ def main():
             arguments.fixation_jitter_min,
             arguments.fixation_jitter_max,
         ),
+        avatar_size=arguments.avatar_size,
+        stimulus_size=arguments.stimulus_size,
     )
 
     # Gently close the PsychoPy. Otherwise, i.e. the window on Windows may hang

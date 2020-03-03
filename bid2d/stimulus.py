@@ -1,7 +1,7 @@
-from pathlib import Path
-from typing import Any, Iterable, Union, Tuple
 import csv
 from collections.abc import MutableMapping
+from pathlib import Path
+from typing import Any, Iterable, Union, Tuple
 
 from psychopy.visual import ImageStim, Window
 
@@ -59,9 +59,21 @@ class Stimulus(MutableMapping):
         yield Stimulus.SHOULD_APPROACH
         yield from self.extra_data.keys()
 
-    def load(self, window: Window, **kwargs) -> ImageStim:
+    def load(self, window: Window, stimulus_size: float = 0.5, **kwargs) -> ImageStim:
         if self._loaded_image is None:
             self._loaded_image = ImageStim(window, image=str(self._image), **kwargs)
+
+            # Scale stimulus relative to scene
+            scale_factor = [
+                value / max(self._loaded_image.size)
+                for value in self._loaded_image.size
+            ]
+            self._loaded_image.units = "norm"
+            self._loaded_image.size = (
+                stimulus_size * scale_factor[0],
+                stimulus_size * scale_factor[1],
+            )
+
         return self._loaded_image
 
     def draw(self, win: Window, **kwargs):
