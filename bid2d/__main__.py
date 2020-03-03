@@ -39,6 +39,9 @@ def main():
         help="Maximal duration of the fixation cross",
         default=1.25,
     )
+    parser.add_argument(
+        "-fullscreen", type=bool, help="Start in fullscreen", default=True
+    )
 
     arguments = parser.parse_args()
 
@@ -49,7 +52,7 @@ def main():
     logger = Logger()
 
     # Query information about the participant and start the experiment
-    experiment = Experiment(stimuli, fullscreen=False, logger=logger)
+    experiment = Experiment(stimuli, fullscreen=arguments.fullscreen, logger=logger)
     experiment.prepare()
     experiment.run(
         seed=arguments.seed,
