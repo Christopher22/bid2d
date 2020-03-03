@@ -15,7 +15,7 @@ from pyglet.window.key import KeyStateHandler, UP, DOWN
 from bid2d.stimulus import Stimulus
 from bid2d.position import Position
 from bid2d.reaction import Reaction
-from bid2d.util.fixation_cross import FixationCross
+from bid2d.util.fixation_cross import FixationPoint
 from bid2d.util.avatar import Avatar
 from bid2d.logger import Logger
 
@@ -48,7 +48,7 @@ class Experiment:
             self.samples, position=(Position.Above, Position.Below), seed=seed
         )
         all((trial.load(self._window, stimulus_size=stimulus_size) for trial in trials))
-        fixation_cross = FixationCross.create(self._window)
+        fixation_cross = FixationPoint.create(self._window)
         avatar = Avatar(self._window, avatar_size=avatar_size)
         random_generator = random.Random(seed)
 
