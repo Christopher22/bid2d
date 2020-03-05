@@ -5,7 +5,7 @@ import numpy as np
 import pylsl
 from pyxdf import load_xdf
 
-from bid2d.reaction import Position
+from bid2d.reaction import Position, Reaction
 
 
 class Logger:
@@ -21,8 +21,7 @@ class Logger:
     @dataclass
     class Reaction:
         num_frames: int
-        correct_response: bool
-        should_approach: bool
+        reaction: Reaction
         timestamp: float = 0.0
 
     def __init__(self):
@@ -37,7 +36,7 @@ class Logger:
             pylsl.stream_info(
                 Logger.REACTION_STREAM_NAME,
                 channel_format=pylsl.cf_int32,
-                channel_count=3,
+                channel_count=2,
             )
         )
 
@@ -52,11 +51,7 @@ class Logger:
             self._stream_trial.push_sample((event.name, event.position.value))
         elif isinstance(event, Logger.Reaction):
             self._stream_reaction.push_sample(
-                (
-                    event.num_frames,
-                    int(event.correct_response),
-                    int(event.should_approach),
-                )
+                (event.num_frames, int(event.reaction.value))
             )
         else:
             raise NotImplementedError("Unknown event!")
@@ -70,10 +65,7 @@ class Logger:
     def load_reactions(file: str) -> Iterable["Reaction"]:
         for timestamp, sample in Logger._load_stream(file, Logger.REACTION_STREAM_NAME):
             yield Logger.Reaction(
-                num_frames=sample[0],
-                correct_response=bool(sample[1]),
-                should_approach=bool(sample[2]),
-                timestamp=timestamp,
+                num_frames=sample[0], reaction=Reaction(sample[1]), timestamp=timestamp,
             )
 
     @staticmethod

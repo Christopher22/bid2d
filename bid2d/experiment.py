@@ -15,7 +15,7 @@ from pyglet.window.key import KeyStateHandler, UP, DOWN
 from bid2d.stimulus import Stimulus
 from bid2d.position import Position
 from bid2d.reaction import Reaction
-from bid2d.util.fixation_cross import FixationPoint
+from bid2d.util.fixation_point import FixationPoint
 from bid2d.util.avatar import Avatar
 from bid2d.logger import Logger
 
@@ -75,29 +75,30 @@ class Experiment:
             should_approach = trial[Stimulus.SHOULD_APPROACH]
 
             # Present the frames one after another and wait for the user reaction
-            reaction = Reaction.NoReaction
+            is_first_reaction = True
             for frame in itertools.count():
+                reaction = Reaction.NoReaction
+
                 # Handle the reaction of the user
                 if keyboard[UP]:
                     avatar.up()
-                    if reaction == Reaction.NoReaction:
-                        reaction = Reaction.Up
+                    reaction = Reaction.Up
                 elif keyboard[DOWN]:
                     avatar.down()
-                    if reaction == Reaction.NoReaction:
-                        reaction = Reaction.Down
+                    reaction = Reaction.Down
 
-                # Check and log the first reaction
+                # If there was a reaction ...
                 if reaction in (Reaction.Up, Reaction.Down):
-                    reaction = reaction.validate(
-                        should_approach=should_approach, position=trial["position"]
-                    )
-                    self.logger.push(
-                        Logger.Reaction(
-                            num_frames=frame,
-                            correct_response=bool(reaction),
-                            should_approach=should_approach,
+                    # ... check it if it was the first one, ...
+                    if is_first_reaction:
+                        reaction = reaction.validate(
+                            should_approach=should_approach, position=trial["position"]
                         )
+                        is_first_reaction = False
+
+                    # ... but log it anyway.
+                    self.logger.push(
+                        Logger.Reaction(num_frames=frame, reaction=reaction,)
                     )
 
                 # Check if this trial should end
