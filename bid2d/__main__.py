@@ -53,11 +53,22 @@ def main():
         help="Do not wait for a consumer for the Lab Streaming Layer streams",
         default=True,
     )
+    parser.add_argument(
+        "--invert_should_approach",
+        dest="invert_should_approach",
+        action="store_true",
+        help="Invert the given value of 'should_approach'.",
+        default=False,
+    )
 
     arguments = parser.parse_args()
 
     # Load the stimuli from the provided CSV file
-    stimuli = list(Stimulus.from_csv(arguments.samples))
+    stimuli = list(
+        Stimulus.from_csv(
+            arguments.samples, invert_should_approach=arguments.invert_should_approach
+        )
+    )
 
     # Prepare the LabStreamingLayer streams
     logger = Logger()

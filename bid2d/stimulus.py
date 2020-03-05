@@ -81,7 +81,10 @@ class Stimulus(MutableMapping):
 
     @staticmethod
     def from_csv(
-        asset_file: Union[Path, str], delimiter: str = ",", dialect: str = "excel"
+        asset_file: Union[Path, str],
+        delimiter: str = ",",
+        dialect: str = "excel",
+        invert_should_approach: bool = False,
     ) -> Iterable["Stimulus"]:
         asset_file = asset_file if isinstance(asset_file, Path) else Path(asset_file)
         with asset_file.open(mode="r", newline="") as csv_file:
@@ -101,6 +104,13 @@ class Stimulus(MutableMapping):
                 sample[Stimulus.SHOULD_APPROACH] = (
                     sample.pop(Stimulus.SHOULD_APPROACH).lower().strip() == "true"
                 )
+
+                # Allow the invert operation for other group
+                if invert_should_approach:
+                    sample[Stimulus.SHOULD_APPROACH] = not sample[
+                        Stimulus.SHOULD_APPROACH
+                    ]
+
                 yield Stimulus(**sample)
 
     def plain_data(self) -> Iterable[Tuple[str, Union[int, float, str, bool]]]:
