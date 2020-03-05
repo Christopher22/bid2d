@@ -16,13 +16,13 @@ def main():
         "-avatar_size",
         type=float,
         help="The relative size of the avatar regarding its largest size.",
-        default=0.4,
+        default=0.15,
     )
     parser.add_argument(
         "-stimulus_size",
         type=float,
         help="The relative size of the stimulus regarding its largest size.",
-        default=0.5,
+        default=0.75,
     )
     parser.add_argument(
         "-seed", type=int, help="The seed for the random generator", default=42
